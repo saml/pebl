@@ -12,8 +12,8 @@ def render_template(name, **kwargs):
             CDN_URL=settings.CDN_URL,
             **kwargs)
 
-@bottle.route('/admin')
-def index():
+@bottle.route('/admin/<path:path>')
+def index(path):
     return render_template('creator.html')
 
 
