@@ -1,41 +1,69 @@
 import yaml
 
+import os
+import re
+import datetime
+
+NON_WORD_RE = re.compile(r'[_\W]')
+YYYY_MM_RE = re.compile(r'^.*/(\d\d\d\d/\d\d)/.*$')
 
 class YamlFrontMatterParser(object):
 	def __init__(self, file_like):
-		self.file_like = file_like
-		self.curr_state = self.Start
-		self.yaml_lines = []
-		self.body_lines = []
+		self._curr_state = self._Start
+		self._yaml_lines = []
+		self._body_lines = []
 		for line in file_like:
-			self.curr_state(line)
-		self.yaml = yaml.safe_load(''.join(self.yaml_lines)) or {}
-		self.body = ''.join(self.body_lines)
+			self._curr_state(line)
+		self.yaml = yaml.safe_load(''.join(self._yaml_lines)) or {}
+		self.body = ''.join(self._body_lines)
 		
 
-	def Start(self, line):
+	def _Start(self, line):
 		if line == '---\n':
-			self.curr_state = self.YamlState
+			self._curr_state = self._YamlState
 		elif line != '\n':
-			self.curr_state = self.BodyState
+			self._curr_state = self._BodyState
 
-	def YamlState(self, line):
+	def _YamlState(self, line):
 		if line == '---\n':
-			self.curr_state = self.BodyState
+			self._curr_state = self._BodyState
 		else:
-			self.yaml_lines.append(line)
+			self._yaml_lines.append(line)
 
-	def BodyState(self, line):
-		self.body_lines.append(line)
+	def _BodyState(self, line):
+		self._body_lines.append(line)
 
-class Content_(object):
-	def __init__(self, path, ext='.html', title='', content=None, prefix='/content/',
-		last_modified=None, created=None):
+def upsert_entry(yaml_front_matter):
+	pass
+
+
+def title_from_path(path):
+	'''
+	>>> title_from_path('/posts/2012/02/01-nice-way-of_flying')
+	'01 Nice Way Of Flying'
+	'''
+	basename = os.path.basename(path)
+	return NON_WORD_RE.sub(' ', basename).title()
+
+def pub_date_from_path(path):
+	'''
+	>>> pub_date_from_path('/posts/2012/12/hola')
+	datetime.datetime(2012, 12, 1, 0, 0)
+	'''
+	m = YYYY_MM_RE.match(path)
+	if m:
+		return datetime.datetime.strptime(m.group(1), '%Y/%m')
+	return datetime.datetime.fromtimestamp(os.path.getctime(path))
+
+
+
+class Content(object):
+	def __init__(self, path, body, metadata={}):
 		self.path = path
-		self.title = title
-		self.ext = ext
-		self.content = content
-		self.prefix = prefix
+		self.body = body
+		self.metadata = metadata
+		self.title = metadata.get('title', title_from_path(path))
+		self.pub_date = metadata.get('pub_date', pub_date_from_path(path))
 
 class NoopPersistence(object):
 	def upsert(self, content):
