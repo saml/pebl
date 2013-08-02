@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% import 'helpers.html' as helpers %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('logout', redirect_to=form.redirect_to.data) }}">
+    {% for field in form %}
+        {{ helpers.form_field(field) }}
+    {% endfor %}
+    <input type="submit" value="Logout" />
+</form>
+{% endblock %}

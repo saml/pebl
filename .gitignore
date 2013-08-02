@@ -1,3 +1,4 @@
 *.pyc
 *_local.py
 tmp/
+_pages/

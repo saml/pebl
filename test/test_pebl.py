@@ -41,7 +41,19 @@ def flask_context():
 def test_existing_page(storage_path, flask_client, flask_context):
     existing_page = os.path.join(storage_path, 'existing/page.pebl.md')
     os.makedirs(os.path.join(storage_path, 'existing'))
+    with open(existing_page, 'w') as f:
+        f.write('''---
+title: Existing Page
+date: 2013-12-30 00:01:50
+---
+# Hello
 
-    resp = flask_client.get(url_for('page_render', page_id='existing/page'))
-    assert resp.status_code == 200
+World
+''')
+
+
+    page_url = url_for('page_render', page_id='existing/page')
+    resp = flask_client.get(page_url)
+    assert(resp.status_code == 200)
+    assert(resp.data.find('<title>Existing Page') > 0)
 

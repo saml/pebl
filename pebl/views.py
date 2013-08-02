@@ -1,10 +1,9 @@
-from flask import request
+from flask import request, render_template
 
-from pebl import app, PAGE_STORAGE
-
-import os
+from pebl import app
+from pebl import content_api
 
 @app.route('/admin/pages/<path:page_id>.html')
 def page_render(page_id):
-    return PAGE_STORAGE
-    #os.path.join(PAGE_STORAGE, page_id+
+    page = content_api.get_page(page_id)
+    return render_template('page.html', page=page)
