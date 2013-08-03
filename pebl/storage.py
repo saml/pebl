@@ -8,6 +8,8 @@ NON_WORD_RE = re.compile(r'[_\W]')
 YYYY_MM_RE = re.compile(r'^.*/(\d\d\d\d/\d\d)/.*$')
 
 class YamlFrontMatterParser(object):
+    MARKER = '---\n'
+
     def __init__(self, file_like):
         self._curr_state = self._Start
         self._yaml_lines = []
@@ -18,21 +20,20 @@ class YamlFrontMatterParser(object):
             if not self._curr_state(line):
                 break
 
-        self.yaml = yaml.safe_load(''.join(self._yaml_lines)) or {}
+        self.head = yaml.safe_load(''.join(self._yaml_lines)) or {}
         self.body = file_like.read()
         
 
     def _Start(self, line):
-        if line == '---\n':
+        if line == self.MARKER:
             self._curr_state = self._YamlState
-        elif line != '\n':
-            self._curr_state = self._BodyState
+        elif len(line.strip()) > 0:
+            return False
         return True
 
     def _YamlState(self, line):
-        if line == '---\n':
+        if line == self.MARKER:
             return False
-            #self._curr_state = self._BodyState
         else:
             self._yaml_lines.append(line)
         return True
