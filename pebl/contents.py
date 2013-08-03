@@ -5,11 +5,24 @@ import models
 
 import misaka
 
+markdown_extensions = (
+    misaka.EXT_NO_INTRA_EMPHASIS | 
+    misaka.EXT_AUTOLINK |
+    misaka.EXT_TABLES |
+    misaka.EXT_FENCED_CODE |
+    misaka.EXT_LAX_HTML_BLOCKS |
+    misaka.EXT_SPACE_HEADERS |
+    misaka.EXT_SUPERSCRIPT
+)
+markdown_flags = (
+    misaka.HTML_TOC
+)
+
 def markdown_to_html(s):
-    return misaka.html(s)
+    return misaka.html(s, extensions=markdown_extensions, render_flags=markdown_flags)
 
 BODY_PROCESSORS = {
-    '.md': misaka.html,
+    '.md': markdown_to_html,
     '.html': lambda x: x
 }
 
